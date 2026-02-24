@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Planner - GKR Karate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dojo: {
+                            red: '#D32F2F',
+                            charcoal: '#263238',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --dojo-charcoal: #263238;
+            --dojo-red: #D32F2F;
+        }
+
+        body {
+            background-color: white;
+            color: var(--dojo-charcoal);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bg-dojo-red {
+            background-color: var(--dojo-red);
+        }
+
+        .text-dojo-red {
+            color: var(--dojo-red);
+        }
+
+        .border-dojo-red {
+            border-color: var(--dojo-red);
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+            }
+
+            #plan-result {
+                border: none !important;
+                padding: 0 !important;
+            }
+        }
+
+        #plan-result h2:first-of-type {
+            margin-top: 0 !important;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--dojo-red);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 border-b-2 border-dojo-red pb-4">
+            <h1 class="text-4xl font-black uppercase tracking-tight text-dojo-red">Class Planner</h1>
+            <p class="text-sm font-bold text-gray-500 uppercase">GKR Karate Master System</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Sidebar / Form (Hidden on Print) -->
+            <aside class="md:col-span-1 no-print">
+                <form id="planner-form" class="space-y-6 bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm">
+                    <div>
+                        <label class="block text-sm font-bold uppercase mb-2">Duration</label>
+                        <select id="duration"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-dojo-red focus:ring-1 focus:ring-dojo-red outline-none">
+                            <option value="45 minutes">45 Minutes</option>
+                            <option value="60 minutes">60 Minutes</option>
+                            <option value="90 minutes">90 Minutes</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div id="other-duration-container" class="hidden animate-in fade-in duration-300">
+                        <label class="block text-sm font-bold uppercase mb-2">Specify Duration</label>
+                        <input type="text" id="other-duration"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-dojo-red focus:ring-1 focus:ring-dojo-red outline-none"
+                            placeholder="e.g. 120 minutes">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold uppercase mb-2">Class Level</label>
+                        <select id="class-level"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-dojo-red focus:ring-1 focus:ring-dojo-red outline-none">
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold uppercase mb-2">Focus Areas</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Warm up" class="accent-dojo-red" checked>
+                                <span>Warm
+                                    up</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Kihon" class="accent-dojo-red">
+                                <span>Kihon (基本)</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Kata" id="kata-toggle"
+                                    class="accent-dojo-red"> <span>Kata (型)</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Kumite" class="accent-dojo-red">
+                                <span>Kumite (組手)</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Point Sparring" class="accent-dojo-red">
+                                <span>Point Sparring</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Combinations" class="accent-dojo-red">
+                                <span>Combinations</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Conditioning" class="accent-dojo-red">
+                                <span>Conditioning</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm italic">
+                                <input type="checkbox" name="focus" value="Cool down" class="accent-dojo-red">
+                                <span>Cool down</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold uppercase mb-2 text-gray-500">Don't Include</label>
+                        <div class="grid grid-cols-2 gap-2 opacity-75">
+                            <label class="flex items-center space-x-2 text-xs italic">
+                                <input type="checkbox" name="exclude" value="Kihon" class="accent-gray-400">
+                                <span>Kihon</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs italic">
+                                <input type="checkbox" name="exclude" value="Kata" class="accent-gray-400">
+                                <span>Kata</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs italic">
+                                <input type="checkbox" name="exclude" value="Kumite" class="accent-gray-400">
+                                <span>Kumite</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs italic">
+                                <input type="checkbox" name="exclude" value="Point Sparring" class="accent-gray-400">
+                                <span>Point Sparring</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs italic">
+                                <input type="checkbox" name="exclude" value="Combinations" class="accent-gray-400">
+                                <span>Combinations</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-xs italic">
+                                <input type="checkbox" name="exclude" value="Conditioning" class="accent-gray-400">
+                                <span>Conditioning</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="kata-list-container" class="hidden animate-in fade-in duration-300">
+                        <label class="block text-sm font-bold uppercase mb-2">GKR Katas</label>
+                        <div
+                            class="grid grid-cols-2 gap-2 max-h-50 overflow-y-auto p-2 border border-gray-200 bg-white rounded">
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Yellow Belt Combo"> <span>Yellow Belt Combo</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Taikyoku Shodan"> <span>Taikyoku Shodan</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Taikyoku Nidan"> <span>Taikyoku Nidan</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Saifa"> <span>Saifa</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Bassai Dai"> <span>Bassai Dai</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Seiunchin"> <span>Seiunchin</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Empi"> <span>Empi</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Sepai"> <span>Sepai</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Hangetsu"> <span>Hangetsu</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Kanku Dai"> <span>Kanku Dai</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Kururunfa"> <span>Kururunfa</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Shisochin"> <span>Shisochin</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Kanku Sho"> <span>Kanku Sho</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Seisan"> <span>Seisan</span></label>
+                            <label class="flex items-center space-x-1 text-xs"><input type="checkbox" name="kata"
+                                    value="Sochin"> <span>Sochin</span></label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold uppercase mb-2">Additional Context</label>
+                        <textarea id="context"
+                            class="w-full p-2 border border-gray-300 rounded h-24 focus:border-dojo-red focus:ring-1 focus:ring-dojo-red outline-none"
+                            placeholder="e.g. focus on hips, slow power..."></textarea>
+                    </div>
+
+                    <button type="submit" id="generate-btn"
+                        class="w-full bg-dojo-red text-white font-black py-3 rounded uppercase tracking-widest hover:opacity-90 transition-opacity flex items-center justify-center space-x-2">
+                        <span>Generate Plan</span>
+                        <div id="btn-loader" class="loader hidden"></div>
+                    </button>
+
+                    <button type="button" onclick="window.print()"
+                        class="w-full border-2 border-dojo-red text-dojo-red font-bold py-2 rounded uppercase tracking-widest hover:bg-red-50 transition-colors">
+                        Print to PDF
+                    </button>
+                </form>
+
+                <!-- Prompt Preview Box -->
+                <div class="mt-8 no-print animate-in slide-in-from-bottom-4 duration-500">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Live Prompt
+                        Preview</label>
+                    <div
+                        class="bg-gray-900 text-gray-300 p-4 rounded-lg text-[11px] font-mono leading-relaxed border-l-4 border-dojo-red shadow-lg overflow-hidden">
+                        <div id="prompt-preview" class="whitespace-pre-wrap">Preparing your custom GKR Karate class plan
+                            instructions...</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Results -->
+            <main class="md:col-span-2">
+                <div id="plan-result"
+                    class="prose max-w-none border-2 border-dashed border-gray-200 rounded-lg p-8 min-h-[400px] bg-white">
+                    <div id="placeholder" class="text-center text-gray-400 py-20 flex flex-col items-center">
+                        <svg class="w-16 h-16 mb-4 opacity-20" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                            <path fill-rule="evenodd"
+                                d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        <p class="font-bold uppercase tracking-wider">Configure your session and hit Generate</p>
+                    </div>
+                    <div id="content-body" class="hidden"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('planner-form');
+        const durationSelect = document.getElementById('duration');
+        const classLevelSelect = document.getElementById('class-level');
+        const otherDurationContainer = document.getElementById('other-duration-container');
+        const otherDurationInput = document.getElementById('other-duration');
+        const kataToggle = document.getElementById('kata-toggle');
+        const kataListContainer = document.getElementById('kata-list-container');
+        const generateBtn = document.getElementById('generate-btn');
+        const btnLoader = document.getElementById('btn-loader');
+        const placeholder = document.getElementById('placeholder');
+        const contentBody = document.getElementById('content-body');
+        const promptPreview = document.getElementById('prompt-preview');
+
+        // Logic to update the Live Prompt Preview
+        const updatePromptPreview = () => {
+            let duration = durationSelect.value;
+            if (duration === 'other') {
+                duration = otherDurationInput.value || '[Specifying duration...]';
+            }
+            const classLevel = classLevelSelect.value;
+            const focusAreas = Array.from(document.querySelectorAll('input[name="focus"]:checked')).map(cb => cb.value).join(', ') || '[Selecting focus areas...]';
+            const excludedAreas = Array.from(document.querySelectorAll('input[name="exclude"]:checked')).map(cb => cb.value).join(', ') || 'None';
+            const kataList = Array.from(document.querySelectorAll('input[name="kata"]:checked')).map(cb => cb.value).join(', ') || 'N/A';
+            const additionalContext = document.getElementById('context').value;
+
+            const previewText = `Generate a karate class plan based on Go-Kan-Ryu (GKR) Karate syllabus for the following:
+- Duration: ${duration}
+- Class Level: ${classLevel}
+- Focus Areas: ${focusAreas}${additionalContext ? ` (${additionalContext})` : ''}
+- DO NOT INCLUDE: ${excludedAreas}
+- Kata List: ${kataList}`;
+
+            promptPreview.innerText = previewText;
+        };
+
+        // Attach listeners to all inputs for live updates
+        form.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('input', updatePromptPreview);
+            input.addEventListener('change', updatePromptPreview);
+        });
+
+        // Initialize preview on load
+        updatePromptPreview();
+
+        // Toggle Other Duration input visibility
+        durationSelect.addEventListener('change', () => {
+            otherDurationContainer.classList.toggle('hidden', durationSelect.value !== 'other');
+            if (durationSelect.value === 'other') otherDurationInput.focus();
+        });
+
+        // Mutual exclusion logic (Focus vs Exclude)
+        const syncCheckboxes = () => {
+            const focusChecks = document.querySelectorAll('input[name="focus"]');
+            const excludeChecks = document.querySelectorAll('input[name="exclude"]');
+
+            focusChecks.forEach(f => {
+                f.addEventListener('change', () => {
+                    const matchingExclude = Array.from(excludeChecks).find(e => e.value === f.value);
+                    if (matchingExclude) {
+                        matchingExclude.disabled = f.checked;
+                        if (f.checked) matchingExclude.checked = false;
+                    }
+                    updatePromptPreview();
+                });
+            });
+
+            excludeChecks.forEach(e => {
+                e.addEventListener('change', () => {
+                    const matchingFocus = Array.from(focusChecks).find(f => f.value === e.value);
+                    if (matchingFocus) {
+                        matchingFocus.disabled = e.checked;
+                        if (e.checked) matchingFocus.checked = false;
+                    }
+                    updatePromptPreview();
+                });
+            });
+
+            // Initial sync for defaults (Warm up)
+            focusChecks.forEach(f => {
+                const matchingExclude = Array.from(excludeChecks).find(e => e.value === f.value);
+                if (matchingExclude) matchingExclude.disabled = f.checked;
+            });
+        };
+
+        syncCheckboxes();
+
+        // Toggle Kata list visibility
+        kataToggle.addEventListener('change', () => {
+            kataListContainer.classList.toggle('hidden', !kataToggle.checked);
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // UI State
+            generateBtn.disabled = true;
+            btnLoader.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            contentBody.classList.add('opacity-50');
+
+            // Gather Data
+            let duration = durationSelect.value;
+            if (duration === 'other') {
+                duration = otherDurationInput.value || 'Custom duration';
+            }
+            const classLevel = classLevelSelect.value;
+            const focusAreas = Array.from(document.querySelectorAll('input[name="focus"]:checked')).map(cb => cb.value).join(', ');
+            const excludedAreas = Array.from(document.querySelectorAll('input[name="exclude"]:checked')).map(cb => cb.value).join(', ');
+            const kataList = Array.from(document.querySelectorAll('input[name="kata"]:checked')).map(cb => cb.value).join(', ');
+            const additionalContext = document.getElementById('context').value;
+
+            try {
+                const response = await fetch('/api/generate-plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        duration,
+                        classLevel,
+                        focusAreas: focusAreas + (additionalContext ? ` (${additionalContext})` : ''),
+                        excludedAreas,
+                        kataList: kataList || 'N/A'
+                    })
+                });
+
+                const html = await response.text();
+                contentBody.innerHTML = html;
+                contentBody.classList.remove('hidden', 'opacity-50');
+            } catch (error) {
+                alert('Connection failure. Ensure the server is running.');
+                console.error(error);
+                placeholder.classList.remove('hidden');
+            } finally {
+                generateBtn.disabled = false;
+                btnLoader.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>
