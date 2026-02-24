@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const fs = require('fs');
+const pdf = require('pdf-parse');
 require('dotenv').config();
 
 const app = express();
@@ -31,6 +33,20 @@ CONTENT STRUCTURE:
 - Section 7: Conclusion (Cool-down & Dojo Kun reflection).
 - Section 8: Wisdom (Always conclude with a profound quote from a prominent martial artist like Gichin Funakoshi, Chojun Miyagi, Kanryo Higaonna, or similar. Format this in a <blockquote class="mt-8 p-6 bg-red-50 border-l-8 border-dojo-red italic text-dojo-charcoal rounded-r shadow-inner"><p class="text-lg">"Quote content"</p><footer class="mt-2 font-bold text-dojo-red">— Martial Artist Name</footer></blockquote>).
 
+ADDITIONAL LOGIC:
+- If "Kumite" or "Combinations" is included in the Focus Areas, you MUST include a specific sub-section called "Drill Combinations" within Section 4 or 5.
+- In this section, generate 3 distinct combinations based on the "Class Level":
+    - Kids: Very simple, fun, and high-energy (e.g., "Maegeri, Gyakuzuki").
+    - Beginner: Simple 2-step combos focuses on form (e.g., "Oizuki, Gyakuzuki").
+    - Intermediate: 3-4 step flowing combos (e.g., "Age-uke, Gyakuzuki, Maegeri").
+    - Advanced: Complex counter-attacks and varied footwork (e.g., "Ura-ken, Gyakuzuki, Mawashigeri").
+- Use standard GKR Karate terminology.
+
+- If "Bag Work" or "Focus Pads" is included in the Focus Areas:
+    - You MUST include a specific section called "Equipment Drill".
+    - Generate 1 high-intensity, practical drill specific to the equipment (Bag or Pads).
+    - Ensure the drill is appropriate for the "Class Level" (e.g., simple impact for Kids, complex timing/distancing for Advanced).
+
 Strictly return ONLY the HTML content inside the plan. No <html> tags, no markdown blocks, no preamble.
 `;
 
@@ -41,7 +57,29 @@ app.post('/api/generate-plan', async (req, res) => {
         return res.status(400).json({ error: 'Missing required class details' });
     }
 
+    if (!process.env.OPENROUTER_API_KEY) {
+        console.error('CRITICAL: OPENROUTER_API_KEY is missing from environment variables.');
+        return res.status(500).json({ error: 'API Configuration Error' });
+    }
+
+    let groundingMaterial = '';
+    try {
+        const manualPath = './sources/gkr-instructor-manual.pdf';
+        if (fs.existsSync(manualPath)) {
+            const dataBuffer = fs.readFileSync(manualPath);
+            const data = await pdf(dataBuffer);
+            groundingMaterial = `
+REFERENCE MATERIAL: GKR KARATE INSTRUCTOR MANUAL (FULL CURRICULUM):
+${data.text}
+------------------------------------------------------------------
+            `;
+        }
+    } catch (manualError) {
+        console.error('Error reading Instructor Manual:', manualError);
+    }
+
     const userPrompt = `
+${groundingMaterial}
 Generate a karate class plan for the following:
 - Duration: ${duration}
 - Class Level: ${classLevel}
@@ -60,7 +98,7 @@ Generate a karate class plan for the following:
             ]
         }, {
             headers: {
-                'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY.trim()}`,
                 'Content-Type': 'application/json'
             },
             timeout: 60000 // 60 second timeout for long generations
