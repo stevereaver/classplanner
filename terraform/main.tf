@@ -10,6 +10,21 @@ resource "google_project_service" "services" {
   disable_on_destroy = false
 }
 
+# Terraform State Bucket
+resource "google_storage_bucket" "tf_state" {
+  name          = "${var.project_id}-terraform-state"
+  location      = var.region
+  force_destroy = false
+  storage_class = "STANDARD"
+
+  versioning {
+    enabled = true
+  }
+
+  public_access_prevention = "enforced"
+}
+
+
 # Create Artifact Registry Repository
 resource "google_artifact_registry_repository" "repo" {
   depends_on    = [google_project_service.services]

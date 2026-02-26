@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/stevereaver/classplanner#readme",
   "dependencies": {
+    "@thednp/dommatrix": "^3.0.2",
     "axios": "^1.13.5",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
