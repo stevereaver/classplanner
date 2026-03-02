@@ -92,7 +92,7 @@ Generate a karate class plan for the following:
 
     try {
         const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-            model: 'google/gemini-2.0-flash-001',
+            model: 'arcee-ai/trinity-large-preview:free',
             max_tokens: 8192,
             messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
